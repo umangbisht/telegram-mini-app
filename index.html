@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Listing</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Telegram Mini App</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             box-sizing: border-box;
         }
-        .container {
-            width: 80%;
-            margin: 0 auto;
-            padding: 20px;
+        h1, h2 {
+            color: #333;
         }
-        .product {
+        .product-list, .cart {
+            list-style-type: none;
+            padding: 0;
+        }
+        .product, .cart-item {
             display: flex;
             align-items: center;
             border-bottom: 1px solid #ddd;
@@ -32,39 +33,24 @@
         .product-details {
             flex: 1;
         }
-        .product-details h3 {
+        .product-details h3, .product-details p {
             margin: 0;
-            font-size: 1.2em;
         }
         .product-details p {
-            margin: 5px 0;
-            font-size: 1em;
+            color: #555;
         }
-        .cart-button {
-            padding: 5px 10px;
+        .cart-button, .checkout-button {
+            padding: 10px 20px;
             background-color: #007bff;
             color: white;
             border: none;
             cursor: pointer;
         }
-        .cart-button:hover {
+        .cart-button:hover, .checkout-button:hover {
             background-color: #0056b3;
         }
-        .cart {
-            list-style-type: none;
-            padding: 0;
-        }
-        .cart li {
-            padding: 5px 0;
-            border-bottom: 1px solid #ddd;
-        }
         .checkout-button {
-            padding: 10px 20px;
             background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-top: 10px;
         }
         .checkout-button:hover {
             background-color: #218838;
@@ -72,35 +58,61 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Product Listing</h1>
-        <div class="product">
-            <img src="https://via.placeholder.com/100" alt="Product Image 1">
-            <div class="product-details">
-                <h3>Product 1</h3>
-                <p>Price: $10.00</p>
-                <button class="cart-button" onclick="addToCart('Product 1', 10.00)">Add to Cart</button>
-            </div>
-        </div>
-        <div class="product">
-            <img src="https://via.placeholder.com/100" alt="Product Image 2">
-            <div class="product-details">
-                <h3>Product 2</h3>
-                <p>Price: $20.00</p>
-                <button class="cart-button" onclick="addToCart('Product 2', 20.00)">Add to Cart</button>
-            </div>
-        </div>
-        <h2>Cart</h2>
-        <ul id="cart" class="cart"></ul>
-        <button class="checkout-button" onclick="checkout()">Checkout</button>
-    </div>
+    <h1>Product Listing</h1>
+    <ul id="product-list" class="product-list">
+        <!-- Products will be dynamically inserted here -->
+    </ul>
+    <h2>Cart</h2>
+    <ul id="cart" class="cart"></ul>
+    <button class="checkout-button" onclick="checkout()">Checkout</button>
 
     <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
         let cart = [];
 
-        function addToCart(productName, productPrice) {
-            cart.push({ name: productName, price: productPrice });
-            displayCart();
+        async function fetchProducts() {
+            try {
+                const response = await fetch('http://localhost:5000/api/products');
+                if (response.ok) {
+                    const products = await response.json();
+                    displayProducts(products);
+                } else {
+                    console.error('Failed to fetch products');
+                }
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            }
+        }
+
+        function displayProducts(products) {
+            const productList = document.getElementById('product-list');
+            products.forEach(product => {
+                const li = document.createElement('li');
+                li.className = 'product';
+                li.innerHTML = `
+                    <img src="${product.image_url}" alt="${product.name}">
+                    <div class="product-details">
+                        <h3>${product.name}</h3>
+                        <p>Price: $${product.price.toFixed(2)}</p>
+                        <button class="cart-button" onclick="addToCart(${product.id})">Add to Cart</button>
+                    </div>
+                `;
+                productList.appendChild(li);
+            });
+        }
+
+        function addToCart(productId) {
+            fetch('http://localhost:5000/api/products')
+                .then(response => response.json())
+                .then(products => {
+                    const product = products.find(p => p.id === productId);
+                    if (product) {
+                        cart.push(product);
+                        displayCart();
+                    }
+                });
         }
 
         function displayCart() {
@@ -109,18 +121,28 @@
             let total = 0;
             cart.forEach(item => {
                 const li = document.createElement('li');
+                li.className = 'cart-item';
                 li.textContent = `${item.name} - $${item.price.toFixed(2)}`;
                 cartList.appendChild(li);
                 total += item.price;
             });
             const totalLi = document.createElement('li');
+            totalLi.className = 'cart-item';
             totalLi.textContent = `Total: $${total.toFixed(2)}`;
             cartList.appendChild(totalLi);
         }
 
         function checkout() {
-            alert('Checkout functionality not implemented yet.');
+            if (cart.length === 0) {
+                alert('Cart is empty');
+                return;
+            }
+            const totalAmount = cart.reduce((sum, item) => sum + item.price, 0);
+            tg.sendData(JSON.stringify({ action: 'checkout', total: totalAmount, items: cart }));
         }
+
+        // Fetch products on page load
+        fetchProducts();
     </script>
 </body>
 </html>
