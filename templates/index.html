@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Listing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            text-align: center;
+        }
+        .product {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+            text-align: center;
+        }
+        .product button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Product Listing</h1>
+    <div class="product">
+        <h2>Burger</h2>
+        <p>Price: $5.00</p>
+        <button onclick="orderProduct('Burger', 5.00)">Order</button>
+    </div>
+    <div class="product">
+        <h2>Fries</h2>
+        <p>Price: $2.50</p>
+        <button onclick="orderProduct('Fries', 2.50)">Order</button>
+    </div>
+    <div class="product">
+        <h2>Soda</h2>
+        <p>Price: $1.50</p>
+        <button onclick="orderProduct('Soda', 1.50)">Order</button>
+    </div>
+
+    <script>
+        function orderProduct(productName, productPrice) {
+            Telegram.WebApp.sendData(JSON.stringify({
+                product: productName,
+                price: productPrice
+            }));
+        }
+
+        Telegram.WebApp.ready();
+    </script>
+</body>
+</html>
