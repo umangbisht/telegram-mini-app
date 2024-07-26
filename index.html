@@ -1,17 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Test Web App</title>
+    <title>Order Food</title>
 </head>
 <body>
     <h1>Order Food</h1>
     <button id="orderButton">Order Pizza</button>
     <script>
-        document.getElementById('orderButton').onclick = function() {
-            const data = JSON.stringify({ product: 'Pizza', price: '12.00' });
-
-            window.Telegram.WebApp.sendData(data);
-        };
+        // Ensure Telegram WebApp is available
+        if (window.Telegram && window.Telegram.WebApp) {
+            document.getElementById('orderButton').onclick = function() {
+                // Prepare the data to be sent
+                const data = JSON.stringify({ product: 'Pizza', price: '12.00' });
+                
+                // Send the data
+                window.Telegram.WebApp.sendData(data);
+                
+                // Optional: log data to console for debugging
+                console.log('Sending data:', data);
+            };
+        } else {
+            console.error('Telegram WebApp is not available.');
+        }
     </script>
 </body>
 </html>
