@@ -7,20 +7,19 @@
     <h1>Order Food</h1>
     <button id="orderButton">Order Pizza</button>
     <script>
-        // Ensure Telegram WebApp is available
+        console.log('Web app script loaded');
+        
         if (window.Telegram && window.Telegram.WebApp) {
+            console.log('Telegram WebApp API is available');
+            
             document.getElementById('orderButton').onclick = function() {
-                // Prepare the data to be sent
                 const data = JSON.stringify({ product: 'Pizza', price: '12.00' });
-                
-                // Send the data
+                console.log('Preparing to send data:', data);
                 window.Telegram.WebApp.sendData(data);
-                
-                // Optional: log data to console for debugging
-                console.log('Sending data:', data);
+                console.log('Data sent');
             };
         } else {
-            console.error('Telegram WebApp is not available.');
+            console.error('Telegram WebApp API is not available.');
         }
     </script>
 </body>
