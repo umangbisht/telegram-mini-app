@@ -3,6 +3,7 @@
 <head>
     <title>Order Food</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
 </head>
 <body>
     <h1>Order Food</h1>
@@ -14,9 +15,12 @@
                 const data = JSON.stringify({ product: 'Pizza', price: '12.00' });
                 console.log('Sending data:', data);
                 window.Telegram.WebApp.sendData(data);
+                window.Telegram.WebApp.close();
+
+                window.alert('Telegram WebApp API is available!!.');
             };
         } else {
-            console.error('Telegram WebApp API is not available.');
+            window.alert('Telegram WebApp API is not available.');
         }
     </script>
 </body>
