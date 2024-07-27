@@ -157,8 +157,9 @@
                 alert('Cart is empty');
                 return;
             }
-            alert('Cart is full');
-            tg.sendData(JSON.stringify({ action: 'checkout', items: cart }));
+            const checkoutData = { action: 'checkout', items: cart };
+            alert('Sending checkout data:', checkoutData);
+            tg.sendData(JSON.stringify(checkoutData));
         }
     </script>
 </body>
