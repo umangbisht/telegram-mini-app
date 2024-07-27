@@ -55,7 +55,12 @@
                 return;
             }
 
-            tg.sendData(JSON.stringify({ action: 'payment', paymentData }));
+            const dataToSend = JSON.stringify({ action: 'payment', paymentData });
+            console.log("Data to send:", dataToSend); // Add console log for debugging
+            alert("Sending data: " + dataToSend); // Add alert for debugging
+
+            // Send payment data to the Telegram bot
+            tg.sendData(dataToSend);
         }
     </script>
 </body>
