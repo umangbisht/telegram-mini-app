@@ -79,7 +79,7 @@
         }
     </style>
 </head>
-<<body>
+<body>
     <div class="container">
         <h1>Product Listing</h1>
         <div class="product">
@@ -157,9 +157,12 @@
                 alert('Cart is empty');
                 return;
             }
+
             const checkoutData = { action: 'checkout', items: cart };
+            alert('Sending checkout data: ' + JSON.stringify(checkoutData)); // Temporary alert
             alert('Sending checkout data:', checkoutData);
             tg.sendData(JSON.stringify(checkoutData));
+            alert('Data sent');
         }
     </script>
 </body>
