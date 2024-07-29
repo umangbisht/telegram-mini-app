@@ -4,20 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Listing</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         .container {
-            width: 300px;
-            margin: auto;
-            padding-top: 20px;
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
         }
-        .product, .payment-form {
-            margin-bottom: 20px;
+        .product {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
         }
-        .cart-button, .checkout-button {
+        .product img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin-right: 20px;
+        }
+        .product-details {
+            flex: 1;
+        }
+        .product-details h3 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+        .product-details p {
+            margin: 5px 0;
+            font-size: 1em;
+        }
+        .cart-button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .cart-button:hover {
+            background-color: #0056b3;
+        }
+        .cart {
+            list-style-type: none;
+            padding: 0;
+        }
+        .cart li {
+            padding: 5px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .checkout-button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
             margin-top: 10px;
         }
-        .payment-form div {
+        .checkout-button:hover {
+            background-color: #218838;
+        }
+        .product, .cart-item {
+            display: flex;
+            align-items: center;
             margin-bottom: 10px;
+        }
+        .product img, .cart-item img {
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -45,36 +103,31 @@
         <button class="checkout-button" onclick="checkout()">Checkout</button>
     </div>
 
-    <div class="container payment-form" style="display: none;">
-        <h1>Payment Information</h1>
-        <form id="payment-form">
-            <div>
-                <label for="card-number">Card Number:</label>
-                <input type="text" id="card-number" required>
-            </div>
-            <div>
-                <label for="expiry-date">Expiry Date:</label>
-                <input type="text" id="expiry-date" placeholder="MM/YY" required>
-            </div>
-            <div>
-                <label for="cvv">CVV:</label>
-                <input type="text" id="cvv" required>
-            </div>
-            <div>
-                <label for="cardholder-name">Cardholder Name:</label>
-                <input type="text" id="cardholder-name" required>
-            </div>
-            <button type="button" onclick="submitPayment()">Submit Payment</button>
-        </form>
-    </div>
-
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         const tg = window.Telegram.WebApp;
+        tg.expand();
+
         let cart = [];
 
         function addToCart(productName, productPrice) {
-            cart.push({ name: productName, price: productPrice, quantity: 1 });
+            const productIndex = cart.findIndex(item => item.name === productName);
+            if (productIndex !== -1) {
+                cart[productIndex].quantity += 1;
+            } else {
+                cart.push({ name: productName, price: productPrice, quantity: 1 });
+            }
+            displayCart();
+        }
+
+        function removeFromCart(productName) {
+            const productIndex = cart.findIndex(item => item.name === productName);
+            if (productIndex !== -1) {
+                cart[productIndex].quantity -= 1;
+                if (cart[productIndex].quantity === 0) {
+                    cart.splice(productIndex, 1);
+                }
+            }
             displayCart();
         }
 
@@ -84,11 +137,17 @@
             let total = 0;
             cart.forEach(item => {
                 const li = document.createElement('li');
-                li.textContent = `${item.name} - $${item.price.toFixed(2)} x ${item.quantity}`;
+                li.className = 'cart-item';
+                li.innerHTML = `
+                    ${item.name} - $${item.price.toFixed(2)} x ${item.quantity}
+                    <button onclick="addToCart('${item.name}', ${item.price})">+</button>
+                    <button onclick="removeFromCart('${item.name}')">-</button>
+                `;
                 cartList.appendChild(li);
                 total += item.price * item.quantity;
             });
             const totalLi = document.createElement('li');
+            totalLi.className = 'cart-item';
             totalLi.textContent = `Total: $${total.toFixed(2)}`;
             cartList.appendChild(totalLi);
         }
@@ -99,27 +158,9 @@
                 return;
             }
 
-            document.querySelector('.container').style.display = 'none';
-            document.querySelector('.payment-form').style.display = 'block';
-        }
-
-        function submitPayment() {
-            const paymentData = {
-                cardNumber: document.getElementById('card-number').value,
-                expiryDate: document.getElementById('expiry-date').value,
-                cvv: document.getElementById('cvv').value,
-                cardholderName: document.getElementById('cardholder-name').value
-            };
-
-            if (!paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv || !paymentData.cardholderName) {
-                alert('Please fill out all fields');
-                return;
-            }
-
-            tg.sendData(JSON.stringify({ action: 'payment', paymentData }));
-            tg.onEvent('web_app_data_send', function() {
-                alert('Payment data sent');
-            });
+            const checkoutData = { action: 'checkout', items: cart };
+            sessionStorage.setItem('cart', JSON.stringify(checkoutData)); // Save cart data to session storage
+            window.location.href = 'payment.html'; // Navigate to payment page
         }
     </script>
 </body>
